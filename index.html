@@ -4,24 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
 <title>매물 노트 — 삼촌은 공인중개사</title>
-
-<!-- PWA 기본 설정 -->
-<meta name="application-name" content="매물노트">
-<meta name="description" content="삼촌은 공인중개사 매물 관리 노트">
 <meta name="theme-color" content="#0f0f13">
-<meta name="background-color" content="#0f0f13">
-<meta name="mobile-web-app-capable" content="yes">
-
-<!-- iOS Safari PWA -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="매물노트">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png">
-
-<!-- Android Chrome PWA -->
-<link rel="manifest" href="manifest.json">
-<meta name="msapplication-TileColor" content="#0f0f13">
+<link rel="icon" href="icon-192.png">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
   :root {
@@ -37,15 +28,15 @@
   .header-title{font-size:19px;font-weight:900;letter-spacing:-0.5px;}
   .header-title span{color:var(--accent);}
   .header-brand{font-size:13px;font-weight:800;margin-top:4px;background:linear-gradient(90deg,#e8c840,#40c8a0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-  .header-stats{display:flex;gap:12px;}
-  .stat-box{text-align:center;cursor:pointer;padding:4px 8px;border-radius:8px;transition:background 0.15s;}
+  .header-stats{display:flex;gap:10px;}
+  .stat-box{text-align:center;cursor:pointer;padding:4px 8px;border-radius:8px;transition:all 0.15s;}
   .stat-box:hover,.stat-box.active{background:var(--surface2);}
   .stat-num{font-size:20px;font-weight:700;}
   .stat-label{font-size:10px;color:var(--text2);margin-top:1px;}
   .col-분양{color:var(--accent);}
   .col-중개{color:var(--info);}
 
-  /* SUMMARY BAR */
+  /* SUMMARY */
   .summary-bar{display:none;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:12px;}
   .summary-bar.open{display:block;}
   .summary-item{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer;}
@@ -54,13 +45,14 @@
   .summary-sub{font-size:11px;color:var(--text2);margin-top:2px;}
   .summary-badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:12px;}
 
-  /* API */
+  /* API SECTION - COLLAPSIBLE */
   .api-section{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-bottom:12px;}
-  .api-label{font-size:11px;color:var(--text2);margin-bottom:7px;text-transform:uppercase;letter-spacing:0.5px;}
-  .api-row{display:flex;gap:8px;}
+  .api-toggle-head{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;}
+  .api-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;}
+  .api-row{display:flex;gap:8px;margin-top:6px;}
   .api-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 11px;color:var(--text);font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;}
   .api-input:focus{border-color:var(--accent);}
-  .api-save-btn{padding:8px 13px;background:var(--accent);border:none;border-radius:8px;color:#0f0f13;font-size:12px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;}
+  .api-save-btn{padding:8px 13px;background:var(--accent);border:none;border-radius:8px;color:#0f0f13;font-size:12px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;white-space:nowrap;}
   .api-status{font-size:11px;margin-top:5px;}
   .api-status.ok{color:var(--accent2);}
   .api-status.no{color:var(--text3);}
@@ -78,7 +70,7 @@
   .sub-tab.active-월세{background:var(--purple);color:#fff;border-color:var(--purple);}
 
   /* SCAN ZONE */
-  .scan-zone{border:2px dashed var(--border);border-radius:16px;padding:18px;text-align:center;margin-bottom:10px;transition:all 0.2s;}
+  .scan-zone{border:2px dashed var(--border);border-radius:16px;padding:18px;text-align:center;margin-bottom:10px;}
   .scan-zone:hover{border-color:var(--accent);}
   .scan-icon{font-size:28px;margin-bottom:6px;}
   .scan-title{font-size:14px;font-weight:700;margin-bottom:3px;}
@@ -97,17 +89,32 @@
   .loading-text{font-size:14px;color:var(--text);font-weight:600;}
   .loading-sub{font-size:12px;color:var(--text3);}
 
-  .manual-btn{width:100%;padding:10px;background:transparent;border:1px solid var(--border);border-radius:12px;color:var(--text2);font-size:13px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;margin-bottom:14px;transition:all 0.15s;}
+  .manual-btn{width:100%;padding:10px;background:transparent;border:1px solid var(--border);border-radius:12px;color:var(--text2);font-size:13px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;margin-bottom:10px;}
   .manual-btn:hover{border-color:var(--accent);color:var(--accent);}
 
-  /* STATUS FILTER */
+  /* IMPORT/EXPORT */
+  .ie-row{display:flex;gap:8px;margin-bottom:12px;}
+  .ie-btn{flex:1;padding:10px;background:transparent;border-radius:12px;font-size:13px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;font-weight:600;text-align:center;}
+  .ie-btn.export{border:1px solid rgba(64,200,160,0.4);color:var(--accent2);}
+  .ie-btn.import{border:1px solid rgba(80,136,232,0.4);color:var(--info);}
+
+  /* REGION FILTER */
+  .region-filter{margin-bottom:10px;display:flex;flex-direction:column;gap:6px;}
+  .region-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;}
+  .region-row::-webkit-scrollbar{display:none;}
+  .region-chip{padding:6px 14px;border-radius:18px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;font-weight:600;font-family:'Noto Sans KR',sans-serif;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all 0.15s;}
+  .region-chip.active{background:var(--surface2);color:var(--text);border-color:var(--text3);font-weight:700;}
+  .region-chip.city-active{background:var(--info);color:#fff;border-color:var(--info);}
+  .region-chip.dong-active{background:rgba(80,136,232,0.15);color:var(--info);border-color:rgba(80,136,232,0.4);}
+
+  /* STATUS TABS */
   .status-tabs{display:flex;gap:6px;margin-bottom:14px;}
-  .stab{padding:6px 14px;border-radius:18px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all 0.15s;}
+  .stab{padding:6px 14px;border-radius:18px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;}
   .stab.active{background:var(--surface2);color:var(--text);border-color:var(--text3);font-weight:700;}
 
-  /* PROJECT LIST CARDS (simple) */
+  /* PROJECT CARD */
   .projects{display:flex;flex-direction:column;gap:10px;}
-  .proj-card{background:var(--surface);border-radius:14px;border:1px solid var(--border);padding:14px 16px;cursor:pointer;transition:all 0.15s;animation:fadeIn 0.3s ease;}
+  .proj-card{background:var(--surface);border-radius:14px;border:1px solid var(--border);padding:14px 16px;cursor:pointer;animation:fadeIn 0.3s ease;}
   .proj-card:hover{border-color:var(--accent);background:rgba(232,200,64,0.03);}
   @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
   .proj-card-top{display:flex;align-items:flex-start;justify-content:space-between;}
@@ -120,43 +127,38 @@
 
   .empty{text-align:center;padding:50px 20px;color:var(--text3);font-size:13px;}
 
-  /* ═══ PROJECT DETAIL OVERLAY ═══ */
+  /* DETAIL OVERLAY */
   .detail-overlay{display:none;position:fixed;inset:0;background:var(--bg);z-index:200;overflow-y:auto;animation:slideInUp 0.25s ease;}
   .detail-overlay.open{display:block;}
   @keyframes slideInUp{from{transform:translateY(30px);opacity:0;}to{transform:translateY(0);opacity:1;}}
-
   .detail-topbar{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;gap:10px;z-index:10;}
   .detail-back{background:var(--surface2);border:1px solid var(--border);border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;flex-shrink:0;}
-  .detail-topbar-name{font-size:16px;font-weight:900;flex:1;letter-spacing:-0.3px;}
+  .detail-topbar-name{font-size:16px;font-weight:900;flex:1;}
   .detail-topbar-actions{display:flex;gap:6px;}
   .detail-topbar-btn{padding:6px 12px;border-radius:18px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-size:11px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;white-space:nowrap;}
   .detail-topbar-btn.map{color:var(--info);border-color:rgba(80,136,232,0.3);}
   .detail-topbar-btn.del{color:var(--danger);border-color:rgba(232,80,80,0.3);}
-
   .detail-content{padding:16px;}
 
-  /* 현장 기본 정보 */
   .detail-info-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px;}
   .detail-info-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
   .detail-info-row:last-child{margin-bottom:0;}
-  .detail-info-label{font-size:11px;color:var(--text3);width:36px;flex-shrink:0;}
-  .detail-info-value{font-size:14px;font-weight:600;flex:1;}
+  .detail-info-label{font-size:11px;color:var(--text3);width:40px;flex-shrink:0;}
+  .detail-info-value{font-size:14px;font-weight:600;flex:1;word-break:break-all;}
   .detail-info-edit{font-size:11px;color:var(--text3);cursor:pointer;padding:2px 6px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);}
   .detail-info-edit:hover{color:var(--accent);border-color:var(--accent);}
 
-  /* 속지/등기 버튼 */
   .detail-photo-btns{display:flex;gap:8px;margin-bottom:14px;}
-  .detail-photo-btn{flex:1;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-size:12px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;text-align:center;transition:all 0.15s;}
+  .detail-photo-btn{flex:1;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-size:12px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;text-align:center;}
   .detail-photo-btn:hover{border-color:var(--accent);color:var(--accent);}
 
-  /* 섹션 타이틀 */
   .detail-section-title{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
 
-  /* 타입 그룹 카드 */
+  /* TYPE GROUP */
   .type-group{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:10px;overflow:hidden;}
   .type-group-header{padding:12px 14px;display:flex;align-items:flex-start;justify-content:space-between;}
   .type-group-title{font-size:13px;font-weight:700;}
-  .type-group-sub{font-size:11px;color:var(--text2);margin-top:3px;line-height:1.6;}
+  .type-group-sub{font-size:11px;color:var(--text2);margin-top:3px;}
   .type-group-right{text-align:right;flex-shrink:0;margin-left:10px;}
   .type-group-price{font-size:15px;font-weight:900;}
   .type-group-loan{font-size:11px;color:var(--text2);margin-top:2px;}
@@ -164,17 +166,16 @@
   .type-group-units{padding:10px 14px;}
   .type-group-units-label{font-size:10px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.4px;}
   .unit-chips{display:flex;flex-wrap:wrap;gap:6px;}
-  .unit-chip{padding:4px 10px;border-radius:16px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--text2);transition:all 0.15s;}
+  .unit-chip{padding:4px 10px;border-radius:16px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--text2);}
   .unit-chip.done{background:rgba(232,80,80,0.1);color:var(--danger);border-color:rgba(232,80,80,0.3);text-decoration:line-through;}
   .unit-chip:not(.done):hover{background:rgba(64,200,160,0.1);color:var(--accent2);border-color:rgba(64,200,160,0.3);}
 
-  /* 등기부 섹션 */
   .reg-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
   .reg-item{background:var(--surface);border-radius:8px;padding:9px 11px;}
   .reg-label{font-size:10px;color:var(--text3);margin-bottom:3px;}
   .reg-value{font-size:13px;font-weight:600;}
 
-  /* 호수 상태 토글 팝업 */
+  /* UNIT POPUP */
   .unit-popup{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:400;align-items:flex-end;justify-content:center;}
   .unit-popup.open{display:flex;}
   .unit-popup-box{background:var(--surface);border-radius:20px 20px 0 0;padding:20px 18px 36px;width:100%;max-width:480px;border:1px solid var(--border);border-bottom:none;animation:slideUp 0.2s ease;}
@@ -182,20 +183,21 @@
   .unit-popup-name{font-size:18px;font-weight:900;margin-bottom:4px;}
   .unit-popup-sub{font-size:12px;color:var(--text2);margin-bottom:18px;}
   .unit-popup-btns{display:flex;flex-direction:column;gap:8px;}
-  .unit-popup-btn{padding:13px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:14px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;text-align:center;transition:all 0.15s;}
+  .unit-popup-btn{padding:13px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:14px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;text-align:center;}
   .unit-popup-btn.complete{background:rgba(64,200,160,0.15);color:var(--accent2);border-color:rgba(64,200,160,0.3);font-weight:700;}
   .unit-popup-btn.reopen{background:rgba(232,200,64,0.15);color:var(--accent);border-color:rgba(232,200,64,0.3);font-weight:700;}
+  .unit-popup-btn.edit{color:var(--accent);}
   .unit-popup-btn.cancel{color:var(--text3);}
 
-  /* PHOTO MODAL */
+  /* PHOTO MODAL WITH ZOOM */
   .photo-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:500;flex-direction:column;align-items:center;justify-content:center;padding:12px;}
   .photo-overlay.open{display:flex;}
   .photo-title{font-size:13px;color:var(--text2);margin-bottom:10px;}
-  .photo-scroll{width:100%;max-height:80vh;overflow:auto;-webkit-overflow-scrolling:touch;border-radius:10px;display:flex;align-items:center;justify-content:center;}
-  .photo-img{max-width:none;width:100%;height:auto;border-radius:10px;display:block;transition:transform 0.15s;transform-origin:center;}
-  .photo-img.zoomed{width:200%;max-width:200%;}
+  .photo-scroll{width:100%;max-height:78vh;overflow:auto;-webkit-overflow-scrolling:touch;border-radius:10px;display:flex;align-items:center;justify-content:center;}
+  .photo-img{max-width:100%;height:auto;border-radius:10px;display:block;cursor:zoom-in;transition:transform 0.15s;}
+  .photo-img.zoomed{max-width:none;width:200%;cursor:zoom-out;}
   .photo-close{margin-top:12px;padding:10px 28px;background:var(--surface);border:1px solid var(--border);border-radius:22px;color:var(--text2);font-size:13px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;}
-  .photo-hint{font-size:11px;color:var(--text3);margin-top:6px;}
+  .photo-hint{font-size:11px;color:var(--text3);margin-top:6px;text-align:center;}
 
   /* FORM MODAL */
   .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:250;align-items:flex-end;justify-content:center;}
@@ -214,47 +216,30 @@
   .btn-cancel{flex:1;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text2);font-family:'Noto Sans KR',sans-serif;font-size:13px;cursor:pointer;}
   .btn-save{flex:2;padding:12px;background:var(--accent);border:none;border-radius:10px;color:#0f0f13;font-weight:700;font-family:'Noto Sans KR',sans-serif;font-size:13px;cursor:pointer;}
 
-  .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);padding:11px 22px;border-radius:28px;font-size:13px;font-weight:700;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:999;white-space:nowrap;}
+  .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);padding:11px 22px;border-radius:28px;font-size:13px;font-weight:700;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:999;white-space:nowrap;}
   .toast.success{background:var(--accent2);color:#0f0f13;}
   .toast.error{background:var(--danger);color:#fff;}
   .toast.show{opacity:1;}
 
-  /* REGION FILTER */
-  .region-filter{margin-bottom:10px;display:flex;flex-direction:column;gap:6px;}
-  .region-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;}
-  .region-row::-webkit-scrollbar{display:none;}
-  .region-chip{padding:6px 14px;border-radius:18px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;font-weight:600;font-family:'Noto Sans KR',sans-serif;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all 0.15s;}
-  .region-chip.active{background:var(--surface2);color:var(--text);border-color:var(--text3);font-weight:700;}
-  .region-chip.city-active{background:var(--info);color:#fff;border-color:var(--info);}
-  .region-chip.dong-active{background:rgba(80,136,232,0.15);color:var(--info);border-color:rgba(80,136,232,0.4);}
+  /* BOTTOM NAV */
   .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;z-index:100;max-width:480px;margin:0 auto;}
-  .nav-btn{flex:1;padding:12px 0 16px;background:transparent;border:none;color:var(--text3);font-size:10px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:all 0.15s;}
+  .nav-btn{flex:1;padding:12px 0 16px;background:transparent;border:none;color:var(--text3);font-size:10px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;}
   .nav-btn .nav-icon{font-size:22px;}
   .nav-btn.active{color:var(--accent);}
-  .nav-btn.active .nav-icon{transform:scale(1.1);}
 
   /* MAP VIEW */
   .map-view{display:none;padding:0;}
   .map-view.show{display:block;}
   .main-view{display:block;}
   .main-view.hidden{display:none;}
-
-  /* MAP CAT FILTER */
-  .map-cat-btn{padding:7px 14px;border-radius:20px;border:1.5px solid var(--border);background:transparent;color:var(--text2);font-size:12px;font-weight:600;font-family:'Noto Sans KR',sans-serif;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all 0.15s;}
+  .map-cat-btn{padding:7px 14px;border-radius:20px;border:1.5px solid var(--border);background:transparent;color:var(--text2);font-size:12px;font-weight:600;font-family:'Noto Sans KR',sans-serif;cursor:pointer;white-space:nowrap;flex-shrink:0;}
   .map-cat-btn.active-all{background:var(--surface2);color:var(--text);border-color:var(--text3);}
   .map-cat-btn.active-분양{background:var(--accent);color:#0f0f13;border-color:var(--accent);}
   .map-cat-btn.active-매매{background:var(--info);color:#fff;border-color:var(--info);}
   .map-cat-btn.active-전세{background:var(--accent2);color:#0f0f13;border-color:var(--accent2);}
   .map-cat-btn.active-월세{background:var(--purple);color:#fff;border-color:var(--purple);}
-
-  /* MAP CONTAINER */
-  #kakaoMap{width:100%;height:calc(100vh - 130px);border-radius:0;}
-  .map-legend{display:flex;gap:12px;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);}
-  .legend-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2);}
-  .legend-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
-
-  /* MAP POPUP */
-  .map-popup{position:fixed;bottom:80px;left:16px;right:16px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 16px;z-index:101;display:none;animation:slideUp 0.2s ease;max-width:448px;margin:0 auto;}
+  #kakaoMap{width:100%;height:calc(100vh - 180px);}
+  .map-popup{position:fixed;bottom:80px;left:16px;right:16px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 16px;z-index:101;display:none;max-width:448px;margin:0 auto;}
   .map-popup.show{display:block;}
   .map-popup-name{font-size:15px;font-weight:900;margin-bottom:4px;}
   .map-popup-addr{font-size:12px;color:var(--text2);margin-bottom:10px;}
@@ -275,11 +260,11 @@
   <div class="header-stats">
     <div class="stat-box" id="statBox분양" onclick="toggleSummary('분양')">
       <div class="stat-num col-분양" id="cnt분양">0</div>
-      <div class="stat-label">분양현장</div>
+      <div class="stat-label">분양</div>
     </div>
     <div class="stat-box" id="statBox중개" onclick="toggleSummary('중개')">
       <div class="stat-num col-중개" id="cnt중개">0</div>
-      <div class="stat-label">중개현장</div>
+      <div class="stat-label">중개</div>
     </div>
     <span style="display:none"><span id="cnt매매">0</span><span id="cnt전세">0</span><span id="cnt월세">0</span></span>
   </div>
@@ -287,13 +272,14 @@
 
 <div class="summary-bar" id="summaryBar"></div>
 
+<!-- 설정 (접기/펼치기) -->
 <div class="api-section">
-  <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleApiSection()">
-    <div class="api-label" style="margin-bottom:0">⚙️ 설정 (API Key)</div>
+  <div class="api-toggle-head" onclick="toggleApiSection()">
+    <div class="api-label">⚙️ 설정 (API Key)</div>
     <div id="apiToggleIcon" style="font-size:14px;color:var(--text3);transition:transform 0.2s">▸</div>
   </div>
   <div id="apiSectionBody" style="display:none;margin-top:10px">
-    <div class="api-label" style="margin-top:6px">🔑 Claude API Key</div>
+    <div class="api-label">🔑 Claude API Key</div>
     <div class="api-row">
       <input class="api-input" id="apiKeyInput" type="password" placeholder="sk-ant-api03-...">
       <button class="api-save-btn" onclick="saveApiKey()">저장</button>
@@ -321,13 +307,13 @@
 
 <div class="scan-zone">
   <div class="scan-icon">⚡</div>
-  <div class="scan-title">속지 사진 → 현장 자동 등록!</div>
-  <div class="scan-sub" id="scanSub">호수가 여러 개여도 현장 1개로 묶어서 등록</div>
+  <div class="scan-title">속지 사진 → 자동 등록!</div>
+  <div class="scan-sub">X표시된 호수는 자동으로 분양완료 처리</div>
   <div class="scan-btns">
     <label class="scan-btn" for="scanCamera">📷 카메라</label>
     <label class="scan-btn" for="scanGallery">🖼️ 갤러리</label>
-    <label class="scan-btn registry" id="registryBtn" for="scanRegistry" style="display:none">📋 등기부등본</label>
-    <label class="scan-btn registry" id="pdfBtn" for="scanPdf" style="display:none">📄 PDF 등기</label>
+    <label class="scan-btn registry" id="registryBtn" for="scanRegistry" style="display:none">📋 등기</label>
+    <label class="scan-btn registry" id="pdfBtn" for="scanPdf" style="display:none">📄 PDF</label>
   </div>
   <input type="file" class="scan-input" id="scanCamera" accept="image/*" capture="environment" onchange="handleImage(this,'매물')">
   <input type="file" class="scan-input" id="scanGallery" accept="image/*,image/heic,image/heif" onchange="handleImage(this,'매물')">
@@ -338,23 +324,22 @@
 <div class="loading-overlay" id="loadingOverlay">
   <img class="loading-img-preview" id="loadingImg" src="" alt="">
   <div class="loading-spinner"></div>
-  <div class="loading-text" id="loadingText">AI가 현장 정보를 읽는 중...</div>
+  <div class="loading-text" id="loadingText">AI가 정보를 읽는 중...</div>
   <div class="loading-sub">잠깐만 기다려주세요 ☕</div>
 </div>
 
 <button class="manual-btn" onclick="openManual()">✏️ 현장 직접 등록</button>
 
-<!-- 내보내기/가져오기 -->
-<div style="display:flex;gap:8px;margin-bottom:12px;">
-  <button onclick="exportData()" style="flex:1;padding:10px;background:transparent;border:1px solid rgba(64,200,160,0.4);border-radius:12px;color:var(--accent2);font-size:13px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;font-weight:600;">📤 내보내기</button>
-  <label for="importFile" style="flex:1;padding:10px;background:transparent;border:1px solid rgba(80,136,232,0.4);border-radius:12px;color:var(--info);font-size:13px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;font-weight:600;text-align:center;">📥 가져오기</label>
+<div class="ie-row">
+  <button class="ie-btn export" onclick="exportData()">📤 내보내기</button>
+  <label for="importFile" class="ie-btn import">📥 가져오기</label>
   <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(this)">
 </div>
 
 <!-- 지역 필터 -->
-<div class="region-filter" id="regionFilter">
+<div class="region-filter">
   <div class="region-row" id="regionCityRow">
-    <button class="region-chip active" data-city="all" onclick="setCity('all',this)">전체</button>
+    <button class="region-chip active" data-city="all" onclick="setCity('all')">전체</button>
   </div>
   <div class="region-row" id="regionDongRow" style="display:none"></div>
 </div>
@@ -366,22 +351,64 @@
 </div>
 
 <div class="projects" id="projectList"></div>
+
+</div><!-- /main-view -->
+
+<!-- 지도 뷰 -->
+<div class="map-view" id="mapView">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px 10px;border-bottom:1px solid var(--border);">
+    <div>
+      <div style="font-size:17px;font-weight:900">🗺️ <span style="color:var(--accent)" id="mapTitle">전체</span> 현장 지도</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:2px">삼촌은 공인중개사</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:6px;padding:10px 14px;border-bottom:1px solid var(--border);overflow-x:auto;">
+    <button class="map-cat-btn active-all" data-cat="all" onclick="setMapCat('all',this)">전체</button>
+    <button class="map-cat-btn" data-cat="분양" onclick="setMapCat('분양',this)">🏗️ 분양</button>
+    <button class="map-cat-btn" data-cat="매매" onclick="setMapCat('매매',this)">🏠 매매</button>
+    <button class="map-cat-btn" data-cat="전세" onclick="setMapCat('전세',this)">🔑 전세</button>
+    <button class="map-cat-btn" data-cat="월세" onclick="setMapCat('월세',this)">💸 월세</button>
+  </div>
+  <div id="kakaoMap"></div>
+</div>
+
+<!-- 지도 팝업 -->
+<div class="map-popup" id="mapPopup">
+  <div class="map-popup-name" id="mapPopupName"></div>
+  <div class="map-popup-addr" id="mapPopupAddr"></div>
+  <div class="map-popup-btns">
+    <button class="map-popup-btn primary" onclick="mapPopupGoDetail()">현장 보기</button>
+    <a class="map-popup-btn" id="mapPopupTmap" href="#" style="display:flex;align-items:center;justify-content:center;text-decoration:none;color:var(--text2)">🚗 T맵</a>
+    <button class="map-popup-btn" onclick="closeMapPopup()">닫기</button>
+  </div>
+</div>
+
+<!-- 하단 네비 -->
+<div class="bottom-nav">
+  <button class="nav-btn active" id="navList" onclick="switchTab('list')">
+    <span class="nav-icon">📋</span>매물목록
+  </button>
+  <button class="nav-btn" id="navMap" onclick="switchTab('map')">
+    <span class="nav-icon">🗺️</span>지도보기
+  </button>
+</div>
+
 <div class="toast" id="toast"></div>
 
-<!-- ═══ PROJECT DETAIL OVERLAY ═══ -->
+<!-- 현장 상세 -->
 <div class="detail-overlay" id="detailOverlay">
   <div class="detail-topbar">
     <div class="detail-back" onclick="closeDetail()">←</div>
     <div class="detail-topbar-name" id="detailTopName"></div>
     <div class="detail-topbar-actions">
-      <button class="detail-topbar-btn map" id="detailMapBtn" onclick="openMapFromDetail()">🗺️ 지도</button>
+      <button class="detail-topbar-btn map" onclick="openMapFromDetail()">🗺️ 지도</button>
       <button class="detail-topbar-btn del" onclick="deleteFromDetail()">🗑️</button>
     </div>
   </div>
   <div class="detail-content" id="detailContent"></div>
 </div>
 
-<!-- 호수 상태 팝업 -->
+<!-- 호수 팝업 -->
 <div class="unit-popup" id="unitPopup" onclick="closeUnitPopup(event)">
   <div class="unit-popup-box">
     <div class="unit-popup-name" id="unitPopupName"></div>
@@ -390,7 +417,7 @@
   </div>
 </div>
 
-<!-- 사진 모달 -->
+<!-- 사진 모달 (확대 가능) -->
 <div class="photo-overlay" id="photoOverlay">
   <div class="photo-title" id="photoTitle"></div>
   <div class="photo-scroll">
@@ -400,7 +427,7 @@
   <button class="photo-close" onclick="closePhoto()">✕ 닫기</button>
 </div>
 
-<!-- 현장 등록/수정 폼 -->
+<!-- 폼 모달 -->
 <div class="modal-overlay" id="manualOverlay" onclick="closeManualOutside(event)">
   <div class="modal">
     <div class="modal-title" id="modalTitle">✏️ <span>현장 등록</span></div>
@@ -421,16 +448,16 @@
     <div class="form-group"><label class="form-label">연락처 / 메모</label><textarea class="form-textarea" id="m_memo" placeholder="분양문의, 담당자 등"></textarea></div>
     <div class="form-section-title">🏠 호수 추가 (선택)</div>
     <div id="unitRows"></div>
-    <button type="button" onclick="addUnitRow()" style="width:100%;padding:8px;background:transparent;border:1px dashed var(--border);border-radius:8px;color:var(--text3);font-size:12px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;margin-bottom:4px;">+ 호수 추가</button>
+    <button type="button" onclick="addUnitRow()" style="width:100%;padding:8px;background:transparent;border:1px dashed var(--border);border-radius:8px;color:var(--text3);font-size:12px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;">+ 호수 추가</button>
     <div id="regFields" style="display:none">
       <div class="form-section-title">📋 등기부등본</div>
       <div class="form-row">
-        <div class="form-group"><label class="form-label">소유자</label><input class="form-input" id="m_owner" placeholder="홍길동"></div>
-        <div class="form-group"><label class="form-label">지번/도로명</label><input class="form-input" id="m_regAddr"></div>
+        <div class="form-group"><label class="form-label">소유자</label><input class="form-input" id="m_owner"></div>
+        <div class="form-group"><label class="form-label">지번</label><input class="form-input" id="m_regAddr"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label class="form-label">건물면적</label><input class="form-input" id="m_buildArea" placeholder="79.2㎡"></div>
-        <div class="form-group"><label class="form-label">대지면적</label><input class="form-input" id="m_landArea" placeholder="120㎡"></div>
+        <div class="form-group"><label class="form-label">건물면적</label><input class="form-input" id="m_buildArea"></div>
+        <div class="form-group"><label class="form-label">대지면적</label><input class="form-input" id="m_landArea"></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label class="form-label">구조</label><input class="form-input" id="m_structure"></div>
@@ -440,7 +467,7 @@
         <div class="form-group"><label class="form-label">근저당</label><select class="form-select" id="m_mortgage"><option>없음</option><option>있음</option></select></div>
         <div class="form-group"><label class="form-label">근저당 금액</label><input class="form-input" id="m_mortgageAmt"></div>
       </div>
-      <div class="form-group"><label class="form-label">기타 권리사항</label><input class="form-input" id="m_rights"></div>
+      <div class="form-group"><label class="form-label">기타 권리</label><input class="form-input" id="m_rights"></div>
     </div>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeManual()">취소</button>
@@ -449,50 +476,8 @@
   </div>
 </div>
 
-</div><!-- /main-view -->
-
-<!-- 지도 뷰 -->
-<div class="map-view" id="mapView">
-  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px 10px;border-bottom:1px solid var(--border);">
-    <div>
-      <div style="font-size:17px;font-weight:900">🗺️ <span style="color:var(--accent)" id="mapTitle">전체</span> 현장 지도</div>
-      <div style="font-size:11px;color:var(--text2);margin-top:2px">삼촌은 공인중개사</div>
-    </div>
-  </div>
-  <!-- 카테고리 필터 -->
-  <div style="display:flex;gap:6px;padding:10px 14px;border-bottom:1px solid var(--border);overflow-x:auto;">
-    <button class="map-cat-btn active-all" data-cat="all" onclick="setMapCat('all',this)">전체</button>
-    <button class="map-cat-btn" data-cat="분양" onclick="setMapCat('분양',this)">🏗️ 분양</button>
-    <button class="map-cat-btn" data-cat="매매" onclick="setMapCat('매매',this)">🏠 매매</button>
-    <button class="map-cat-btn" data-cat="전세" onclick="setMapCat('전세',this)">🔑 전세</button>
-    <button class="map-cat-btn" data-cat="월세" onclick="setMapCat('월세',this)">💸 월세</button>
-  </div>
-  <div id="kakaoMap"></div>
-</div>
-
-<!-- 지도 팝업 -->
-<div class="map-popup" id="mapPopup">
-  <div class="map-popup-name" id="mapPopupName"></div>
-  <div class="map-popup-addr" id="mapPopupAddr"></div>
-  <div class="map-popup-btns">
-    <button class="map-popup-btn primary" id="mapPopupDetail" onclick="mapPopupGoDetail()">현장 보기</button>
-    <a class="map-popup-btn" id="mapPopupTmap" href="#" target="_blank" style="display:flex;align-items:center;justify-content:center;text-decoration:none;color:var(--text2)">🚗 T맵</a>
-    <button class="map-popup-btn" onclick="closeMapPopup()">닫기</button>
-  </div>
-</div>
-
-<!-- 하단 네비 -->
-<div class="bottom-nav">
-  <button class="nav-btn active" id="navList" onclick="switchTab('list')">
-    <span class="nav-icon">📋</span>매물목록
-  </button>
-  <button class="nav-btn" id="navMap" onclick="switchTab('map')">
-    <span class="nav-icon">🗺️</span>지도보기
-  </button>
-</div>
-
 <script>
-let projects = JSON.parse(localStorage.getItem('매물_v6') || '[]');
+let projects = JSON.parse(localStorage.getItem('매물_v7') || localStorage.getItem('매물_v6') || '[]');
 let currentCat = '분양';
 let currentSub = '매매';
 let currentStatus = 'all';
@@ -508,6 +493,37 @@ let mapMarkers = [];
 let mapPopupProjId = null;
 let mapCat = 'all';
 
+// ── API KEY ──────────────────────────────
+function toggleApiSection() {
+  const body = document.getElementById('apiSectionBody');
+  const icon = document.getElementById('apiToggleIcon');
+  if (body.style.display === 'none') {
+    body.style.display = 'block';
+    icon.style.transform = 'rotate(90deg)';
+  } else {
+    body.style.display = 'none';
+    icon.style.transform = 'rotate(0deg)';
+  }
+}
+
+function saveApiKey() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (!key) return;
+  localStorage.setItem('claudeApiKey', key);
+  updateApiStatus();
+  showToast('API Key 저장됨 ✓', 'success');
+}
+
+function updateApiStatus() {
+  const key = localStorage.getItem('claudeApiKey');
+  const el = document.getElementById('apiStatus');
+  if (key) {
+    el.textContent = '✓ 등록됨 — 사진 찍으면 현장 자동 등록!';
+    el.className = 'api-status ok';
+    document.getElementById('apiKeyInput').value = key.slice(0,14) + '...';
+  }
+}
+
 function saveKakaoKey() {
   const key = document.getElementById('kakaoKeyInput').value.trim();
   if (!key) return;
@@ -516,7 +532,6 @@ function saveKakaoKey() {
   document.getElementById('kakaoStatus').className = 'api-status ok';
   document.getElementById('kakaoKeyInput').value = key.slice(0,8) + '...';
 
-  // 기존 SDK 제거 후 재로드
   const old = document.getElementById('kakaoMapSdk');
   if (old) old.remove();
   window.kakao = undefined;
@@ -524,32 +539,9 @@ function saveKakaoKey() {
   const s = document.createElement('script');
   s.id = 'kakaoMapSdk';
   s.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${key}&libraries=services&autoload=false`;
-  s.onload = () => {
-    window.kakao.maps.load(() => showToast('카카오맵 준비됨 ✓', 'success'));
-  };
+  s.onload = () => window.kakao.maps.load(() => showToast('카카오맵 준비됨 ✓', 'success'));
   document.head.appendChild(s);
   showToast('카카오맵 Key 저장됨 ✓', 'success');
-}
-
-// ── API KEY ──────────────────────────────
-function saveApiKey() {
-  const key = document.getElementById('apiKeyInput').value.trim();
-  if (!key) return;
-  localStorage.setItem('claudeApiKey', key);
-  updateApiStatus();
-  showToast('API Key 저장됨 ✓', 'success');
-}
-function updateApiStatus() {
-  const key = localStorage.getItem('claudeApiKey');
-  const el = document.getElementById('apiStatus');
-  if (key) {
-    el.textContent = '✓ 등록됨 — 사진 찍으면 현장 자동 등록!';
-    el.className = 'api-status ok';
-    document.getElementById('apiKeyInput').value = key.slice(0,14) + '...';
-  } else {
-    el.textContent = 'API Key 입력 시 사진 자동 인식';
-    el.className = 'api-status no';
-  }
 }
 
 // ── CATEGORY ─────────────────────────────
@@ -558,14 +550,13 @@ function setCat(cat, el) {
   document.querySelectorAll('.cat-tab').forEach(t => t.className = 'cat-tab');
   el.classList.add('active-' + cat);
   const sub = document.getElementById('subTabs');
-  const reg = document.getElementById('registryBtn');
   if (cat === '중개') {
     sub.classList.add('show');
-    reg.style.display = '';
+    document.getElementById('registryBtn').style.display = '';
     document.getElementById('pdfBtn').style.display = '';
   } else {
     sub.classList.remove('show');
-    reg.style.display = 'none';
+    document.getElementById('registryBtn').style.display = 'none';
     document.getElementById('pdfBtn').style.display = 'none';
   }
   render();
@@ -592,18 +583,15 @@ function toggleSummary(cat) {
   document.querySelectorAll('.stat-box').forEach(b => b.classList.remove('active'));
   document.getElementById('statBox' + cat).classList.add('active');
 
-  const list = cat === '중개'
-    ? projects.filter(p => ['매매','전세','월세'].includes(p.cat))
-    : projects.filter(p => p.cat === cat);
-
+  const list = cat === '중개' ? projects.filter(p => ['매매','전세','월세'].includes(p.cat)) : projects.filter(p => p.cat === cat);
   if (!list.length) {
     bar.innerHTML = `<div style="text-align:center;padding:10px;font-size:13px;color:var(--text3)">${cat} 현장이 없습니다</div>`;
     bar.classList.add('open'); return;
   }
 
   bar.innerHTML = list.map(proj => {
-    const remain = proj.units.filter(u => u.status === '진행').length;
-    const done = proj.units.filter(u => u.status === '완료').length;
+    const remain = proj.units.filter(u=>u.status==='진행').length;
+    const done = proj.units.filter(u=>u.status==='완료').length;
     const c = proj.cat;
     return `<div class="summary-item" onclick="jumpToProject('${proj.id}','${c}')">
       <div>
@@ -683,7 +671,7 @@ async function handleImage(input, mode) {
           projectName: data.name || '등기 매물', type: data.type || '빌라',
           location: data.location || '', memo: data.memo || '',
           image: dataUrl, registry: data, createdAt: new Date().toLocaleDateString('ko-KR'),
-          units: [{ id: 'u1', name: '전체', price: '', area: data.area || '', loan: '', status: '진행', memo: '' }]
+          units: [{ id:'u1', name:'전체', price:'', area: data.area||'', loan:'', status:'진행', memo:'' }]
         };
         projects.unshift(proj);
         showToast('⚡ 등기 등록 완료!', 'success');
@@ -705,17 +693,19 @@ async function handleImage(input, mode) {
         projects.unshift(proj);
         const autoSold = units.filter(u => u.status === '완료').length;
         const msg = autoSold > 0
-          ? `⚡ ${proj.projectName} — ${proj.units.length}개 호수 (${autoSold}개 완료) 등록!`
+          ? `⚡ ${proj.projectName} — ${proj.units.length}호 (${autoSold}개 완료) 등록!`
           : `⚡ ${proj.projectName} — ${proj.units.length}개 호수 등록!`;
         showToast(msg, 'success');
         save(); render();
         openDetail(proj.id);
+        document.getElementById('loadingOverlay').classList.remove('show');
+        input.value = '';
         return;
       }
       save(); render();
     } catch (err) {
       console.error(err);
-      showToast('인식 실패: ' + (err.message || '다시 시도해주세요'), 'error');
+      showToast('인식 실패: ' + (err.message || '다시 시도'), 'error');
     } finally {
       document.getElementById('loadingOverlay').classList.remove('show');
       input.value = '';
@@ -733,7 +723,7 @@ async function handlePdf(input) {
   if (!apiKey) { showToast('API Key를 먼저 입력해주세요', 'error'); input.value = ''; return; }
 
   document.getElementById('loadingImg').src = '';
-  document.getElementById('loadingText').textContent = 'AI가 PDF 등기부를 분석 중...';
+  document.getElementById('loadingText').textContent = 'AI가 PDF를 분석 중...';
   document.getElementById('loadingOverlay').classList.add('show');
 
   const reader = new FileReader();
@@ -751,15 +741,15 @@ async function handlePdf(input) {
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514',
           max_tokens: 2000,
-          messages: [{ role: 'user', content: [
-            { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64 } },
-            { type: 'text', text: getRegistryPrompt() }
+          messages: [{ role:'user', content: [
+            { type:'document', source:{ type:'base64', media_type:'application/pdf', data:base64 } },
+            { type:'text', text: getRegistryPrompt() }
           ]}]
         })
       });
       if (!res.ok) { const e2 = await res.text(); throw new Error('API ' + res.status + ': ' + e2.slice(0,60)); }
       const data = await res.json();
-      const text = data.content.map(b => b.text||'').join('');
+      const text = data.content.map(b=>b.text||'').join('');
       const obj = text.match(/\{[\s\S]*\}/);
       const parsed = JSON.parse(obj ? obj[0] : text);
 
@@ -776,147 +766,138 @@ async function handlePdf(input) {
       showToast('⚡ PDF 등기부 등록 완료!', 'success');
     } catch (err) {
       console.error(err);
-      showToast('PDF 인식 실패: ' + (err.message||'다시 시도해주세요'), 'error');
+      showToast('PDF 인식 실패: ' + (err.message||''), 'error');
     } finally {
       document.getElementById('loadingOverlay').classList.remove('show');
       input.value = '';
     }
   };
-  reader.onerror = () => { showToast('PDF를 읽을 수 없어요', 'error'); input.value = ''; };
   reader.readAsDataURL(file);
 }
 
 function getPropertyPrompt() {
-  return `이 이미지는 부동산 매물 속지(분양표/전단지 등)입니다.
+  return `이 이미지는 부동산 매물 속지입니다.
 
 [현장명 추출 - 매우 중요]
-- 이미지에서 가장 크고 눈에 띄는 브랜드명/단지명을 정확히 원문 그대로 추출
-- 워터마크, 전화번호, 주소는 현장명이 아닙니다
-- 예: "포레스트 휴", "법원리 신축빌라", "힐스테이트 파주"
+- 이미지에서 가장 크고 눈에 띄는 브랜드명/단지명 원문 그대로
+- 워터마크, 전화번호, 주소는 현장명이 아님
+- 예: "포레스트 휴", "힐스테이트 파주"
 
 [주소 추출 - 매우 중요]
 - 시/군/구/읍/면/로/길 포함 최대한 상세하게
 - 광역시(인천, 서울, 부산 등)도 정확히 인식
-- 예: "인천광역시 남동구 논현동 123-4", "파주시 하우고개길 310-46"
-- 작은 폰트나 흐릿한 글씨도 최대한 정확히 읽어주세요
+- 작은 폰트/흐릿한 글씨도 최대한 정확히 읽기
 
-[호수별 정보 추출 - 매우 중요]
-- 작은 글씨나 흐릿한 숫자도 정확히 읽어주세요
-- 모든 호수 누락 없이 전부 추출
+[호수별 정보]
+- 모든 호수 누락 없이 추출
+- 작은 글씨도 정확히
 
 [분양완료 호수 판별 - 매우 중요]
-- 호수에 X표, ✗, 빨간 줄, 볼펜으로 그어진 표시, 사선, 색칠(검정/빨강), "완료", "계약", "SOLD" 등의 표시가 있으면
-  해당 호수의 "status"를 "완료"로 설정
-- 명확하게 지워지지 않은 호수는 "status"를 "진행"으로 설정
-- 확실하지 않으면 "진행"으로 기본 설정
+- X표, ✗, 빨간 줄, 볼펜 그어짐, 사선, 색칠(검정/빨강), "완료", "계약", "SOLD" 표시가 있는 호수
+  → "status": "완료"
+- 명확하지 않으면 "진행"
 
-아래 JSON으로만 응답. 순수 JSON. 마크다운 없이.
+순수 JSON만 응답:
 {
-  "projectName": "단지명/브랜드명 원문 그대로",
-  "type": "빌라 or 아파트 or 오피스텔 or 단독주택",
-  "location": "도로명 또는 지번 주소 상세하게",
-  "memo": "분양문의 연락처, 담당자 등",
+  "projectName": "단지명",
+  "type": "빌라/아파트/오피스텔/단독주택",
+  "location": "상세 주소",
+  "memo": "연락처, 담당자",
   "units": [
     {
       "name": "동+호수 (예: 601동 101호)",
-      "price": "가격 (예: 3억8500만)",
-      "area": "전용면적 (예: 61.06㎡)",
-      "loan": "대출 가능액 또는 융자금 (있으면)",
-      "memo": "테라스, 분양사무실 등 특이사항",
-      "status": "진행 or 완료 (X표시나 지워진 호수는 완료)"
+      "price": "가격",
+      "area": "전용면적",
+      "loan": "대출액 (있으면)",
+      "memo": "특이사항",
+      "status": "진행 or 완료"
     }
   ]
 }`;
 }
 
 function getRegistryPrompt() {
-  return `이 이미지는 부동산 등기부등본입니다. 아래 JSON으로만 응답. 순수 JSON만.
+  return `이 문서는 부동산 등기부등본입니다. 순수 JSON만 응답:
 {
-  "name":"건물명 또는 소재지 요약","type":"빌라 or 아파트 or 오피스텔 or 단독주택",
-  "area":"건물면적(㎡)","location":"소재지 주소","memo":"기타",
-  "owner":"소유자명","regAddr":"지번 또는 도로명주소",
-  "buildArea":"건물면적(㎡)","landArea":"대지면적(㎡)",
+  "name":"건물명/소재지","type":"빌라/아파트/오피스텔/단독주택",
+  "area":"건물면적","location":"소재지 주소","memo":"기타",
+  "owner":"소유자","regAddr":"지번/도로명",
+  "buildArea":"건물면적","landArea":"대지면적",
   "structure":"구조","approvalDate":"사용승인일",
-  "mortgage":"근저당 있음 or 없음","mortgageAmt":"근저당 금액","rights":"기타 권리사항"
+  "mortgage":"근저당 있음/없음","mortgageAmt":"근저당 금액","rights":"기타 권리"
 }`;
 }
 
 async function callClaude(base64, apiKey, prompt) {
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
-    headers: { 'Content-Type':'application/json', 'x-api-key':apiKey, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' },
+    headers: {
+      'Content-Type':'application/json','x-api-key':apiKey,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'
+    },
     body: JSON.stringify({
       model: 'claude-sonnet-4-20250514', max_tokens: 2000,
       messages: [{ role:'user', content: [
         { type:'image', source:{ type:'base64', media_type:'image/jpeg', data:base64 } },
-        { type:'text', text:prompt }
+        { type:'text', text: prompt }
       ]}]
     })
   });
   if (!res.ok) { const e = await res.text(); throw new Error('API ' + res.status + ': ' + e.slice(0,60)); }
   const data = await res.json();
-  const text = data.content.map(b => b.text||'').join('');
+  const text = data.content.map(b=>b.text||'').join('');
   const arr = text.match(/\[[\s\S]*\]/);
   const obj = text.match(/\{[\s\S]*\}/);
   return JSON.parse(arr && arr[0].length > (obj?obj[0].length:0) ? arr[0] : (obj?obj[0]:text));
 }
 
-// 전화번호 추출 (첫 번째)
+// ── 전화번호 ─────────────────────────────
 function extractPhone(text) {
   if (!text) return '';
   const m = text.match(/(0\d{1,2}[-.\s]?\d{3,4}[-.\s]?\d{4})/);
   return m ? m[1].replace(/[-.\s]/g,'') : '';
 }
-
-// 전화번호 자동 링크 변환
 function linkifyPhone(text) {
   if (!text) return '-';
-  // 010-1234-5678 / 010.1234.5678 / 01012345678 / 031-123-4567 형태 모두 인식
   return text.replace(/(0\d{1,2}[-.\s]?\d{3,4}[-.\s]?\d{4})/g, num => {
     const clean = num.replace(/[-.\s]/g, '');
     return `<a href="tel:${clean}" style="color:var(--accent2);font-weight:700;text-decoration:none;background:rgba(64,200,160,0.12);padding:2px 8px;border-radius:12px;border:1px solid rgba(64,200,160,0.3)">📞 ${num}</a>`;
   });
 }
 
-// ── 주소 파싱 ─────────────────────────────
+// ── 주소 파싱 (광역시 포함) ────────────────
 function parseCity(addr) {
   if (!addr) return '';
-  // 광역시/특별시 인식 (풀네임 또는 약칭)
-  const metro = addr.match(/(서울특별시|서울시|부산광역시|부산시|대구광역시|대구시|인천광역시|인천시|광주광역시|광주시|대전광역시|대전시|울산광역시|울산시|세종특별자치시|세종시)/);
-  if (metro) {
+  const metroFull = addr.match(/(서울특별시|서울시|부산광역시|부산시|대구광역시|대구시|인천광역시|인천시|광주광역시|광주시|대전광역시|대전시|울산광역시|울산시|세종특별자치시|세종시)/);
+  if (metroFull) {
     const map = {'서울':'서울특별시','부산':'부산광역시','대구':'대구광역시','인천':'인천광역시','광주':'광주광역시','대전':'대전광역시','울산':'울산광역시','세종':'세종특별자치시'};
-    const key = metro[1].replace(/특별시|광역시|특별자치시|시$/,'');
-    return map[key] || metro[1];
+    const key = metroFull[1].replace(/특별시|광역시|특별자치시|시$/,'');
+    return map[key] || metroFull[1];
   }
-  // 광역시 약어 + 구 (예: "인천 남동구")
-  const metro2 = addr.match(/^(서울|부산|대구|인천|광주|대전|울산|세종)\s/);
-  if (metro2) {
+  const metroShort = addr.match(/^(서울|부산|대구|인천|광주|대전|울산|세종)\s/);
+  if (metroShort) {
     const map = {'서울':'서울특별시','부산':'부산광역시','대구':'대구광역시','인천':'인천광역시','광주':'광주광역시','대전':'대전광역시','울산':'울산광역시','세종':'세종특별자치시'};
-    return map[metro2[1]];
+    return map[metroShort[1]];
   }
-  // 일반 시/군
   const m = addr.match(/([가-힣]+시|[가-힣]+군)/);
   return m ? m[1] : '';
 }
-
 function parseDong(addr) {
   if (!addr) return '';
-  // 구 우선 (광역시일 경우)
   const city = parseCity(addr);
   if (city && /광역시|특별시|특별자치시/.test(city)) {
     const gu = addr.match(/([가-힣]+구)/);
     if (gu) return gu[1];
   }
-  // 읍/면/동/리
   const m = addr.match(/([가-힣]+읍|[가-힣]+면|[가-힣]+동|[가-힣]+리)/);
   return m ? m[1] : '';
 }
 
-// ── 지역 필터 UI ──────────────────────────
+// ── 지역 필터 ──────────────────────────────
 function updateRegionFilter() {
   const effectiveCat = getEffectiveCat();
   const all = projects.filter(p => p.cat === effectiveCat);
-
   const cities = ['all', ...new Set(all.map(p => parseCity(p.location)).filter(Boolean))].sort((a,b)=>a==='all'?-1:b==='all'?1:a.localeCompare(b,'ko'));
   document.getElementById('regionCityRow').innerHTML = cities.map(c =>
     `<button class="region-chip ${c===currentCity?(c==='all'?'active':'city-active'):''}" onclick="setCity('${c}')">${c==='all'?'전체':c}</button>`
@@ -924,28 +905,26 @@ function updateRegionFilter() {
 
   const dongRow = document.getElementById('regionDongRow');
   if (currentCity === 'all') { dongRow.style.display='none'; return; }
-
   const cityProjs = all.filter(p => parseCity(p.location) === currentCity);
   const dongs = ['all', ...new Set(cityProjs.map(p => parseDong(p.location)).filter(Boolean))].sort((a,b)=>a==='all'?-1:b==='all'?1:a.localeCompare(b,'ko'));
-
   if (dongs.length > 2) {
     dongRow.innerHTML = dongs.map(d =>
       `<button class="region-chip ${d===currentDong?(d==='all'?'active':'dong-active'):''}" onclick="setDong('${d}')">${d==='all'?'전체':d}</button>`
     ).join('');
     dongRow.style.display = 'flex';
-  } else {
-    dongRow.style.display = 'none';
-  }
+  } else dongRow.style.display = 'none';
+}
+function setCity(city) { currentCity = city; currentDong = 'all'; updateRegionFilter(); render(); }
+function setDong(dong) { currentDong = dong; updateRegionFilter(); render(); }
+
+function setStatus(s, el) {
+  currentStatus = s;
+  document.querySelectorAll('.stab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  render();
 }
 
-function setCity(city) {
-  currentCity = city; currentDong = 'all';
-  updateRegionFilter(); render();
-}
-function setDong(dong) {
-  currentDong = dong; updateRegionFilter(); render();
-}
-
+// ── RENDER ────────────────────────────────
 function render() {
   document.getElementById('cnt분양').textContent = projects.filter(p=>p.cat==='분양').length;
   document.getElementById('cnt중개').textContent = projects.filter(p=>['매매','전세','월세'].includes(p.cat)).length;
@@ -958,17 +937,14 @@ function render() {
   const effectiveCat = getEffectiveCat();
   const list = document.getElementById('projectList');
   let filtered = projects.filter(p => p.cat === effectiveCat);
-
-  // 지역 필터 적용
   if (currentCity !== 'all') filtered = filtered.filter(p => parseCity(p.location) === currentCity);
   if (currentDong !== 'all') filtered = filtered.filter(p => parseDong(p.location) === currentDong);
-
   if (currentStatus === '진행') filtered = filtered.filter(p => p.units.some(u=>u.status==='진행'));
   if (currentStatus === '완료') filtered = filtered.filter(p => p.units.every(u=>u.status==='완료'));
 
   if (!filtered.length) {
-    const regionMsg = currentCity !== 'all' ? ` (${currentCity}${currentDong!=='all'?' '+currentDong:''})` : '';
-    list.innerHTML = `<div class="empty">📋 ${effectiveCat}${regionMsg} 현장이 없습니다<br><span style="font-size:11px;color:var(--text3)">사진을 찍으면 바로 등록돼요!</span></div>`;
+    const region = currentCity !== 'all' ? ` (${currentCity}${currentDong!=='all'?' '+currentDong:''})` : '';
+    list.innerHTML = `<div class="empty">📋 ${effectiveCat}${region} 현장이 없습니다<br><span style="font-size:11px;color:var(--text3)">사진을 찍으면 바로 등록돼요!</span></div>`;
     return;
   }
 
@@ -979,13 +955,14 @@ function render() {
     const remain = proj.units.filter(u=>u.status==='진행').length;
     const done = proj.units.filter(u=>u.status==='완료').length;
     const c = proj.cat;
+    const phone = extractPhone(proj.memo);
     return `
     <div class="proj-card" onclick="openDetail('${proj.id}')">
       <div class="proj-card-top">
         <div>
           <div class="proj-card-name">${proj.projectName}</div>
           <div class="proj-card-addr">📍 ${proj.location || '주소 미입력'}</div>
-          ${extractPhone(proj.memo) ? `<div style="margin-top:5px;font-size:12px"><a href="tel:${extractPhone(proj.memo)}" onclick="event.stopPropagation()" style="color:var(--accent2);text-decoration:none;font-weight:700">📞 ${extractPhone(proj.memo)}</a></div>` : ''}
+          ${phone ? `<div style="margin-top:5px;font-size:12px"><a href="tel:${phone}" onclick="event.stopPropagation()" style="color:var(--accent2);text-decoration:none;font-weight:700">📞 ${phone}</a></div>` : ''}
         </div>
         <div class="proj-card-arrow">›</div>
       </div>
@@ -998,18 +975,17 @@ function render() {
   }).join('');
 }
 
-// ── PROJECT DETAIL ────────────────────────
+// ── DETAIL ────────────────────────────────
 function openDetail(projId) {
   const proj = projects.find(p=>p.id===projId);
   if (!proj) return;
   detailProjId = projId;
-
   const colMap = { 분양:'var(--accent)', 매매:'var(--info)', 전세:'var(--accent2)', 월세:'var(--purple)' };
   const c = proj.cat;
 
   document.getElementById('detailTopName').textContent = proj.projectName;
 
-  // 면적+가격 기준으로만 묶기 (동 무관)
+  // 면적+가격 기준 그룹핑
   const typeMap = {};
   proj.units.forEach(u => {
     const key = (u.area||'?') + '__' + (u.price||'?');
@@ -1017,11 +993,7 @@ function openDetail(projId) {
     typeMap[key].units.push(u);
   });
 
-  // 동 추출 헬퍼
-  const getDong = name => {
-    const m = name.match(/(\d+동)/);
-    return m ? m[1] : '';
-  };
+  const getDong = name => { const m = name.match(/(\d+동)/); return m ? m[1] : ''; };
 
   let typesHTML = '';
   Object.entries(typeMap).sort().forEach(([key, tg]) => {
@@ -1029,7 +1001,6 @@ function openDetail(projId) {
     const doneUnits = tg.units.filter(u=>u.status==='완료');
     const sqm = parseFloat(tg.area) || 0;
     const pyeong = sqm ? `약 ${Math.round(sqm/3.3)}평` : '';
-    // 관련 동 목록
     const dongs = [...new Set(tg.units.map(u=>getDong(u.name)).filter(Boolean))].sort().join(', ');
 
     typesHTML += `
@@ -1037,9 +1008,7 @@ function openDetail(projId) {
       <div class="type-group-header">
         <div>
           <div class="type-group-title">${tg.area || '-'} ${pyeong ? '('+pyeong+')' : ''}${dongs ? ' · ' + dongs : ''}</div>
-          <div class="type-group-sub">
-            진행 ${progUnits.length}호 · 완료 ${doneUnits.length}호
-          </div>
+          <div class="type-group-sub">진행 ${progUnits.length}호 · 완료 ${doneUnits.length}호</div>
         </div>
         <div class="type-group-right">
           <div class="type-group-price" style="color:${colMap[c]}">${tg.price || '-'}</div>
@@ -1048,7 +1017,7 @@ function openDetail(projId) {
       </div>
       <div class="type-group-divider"></div>
       <div class="type-group-units">
-        <div class="type-group-units-label">호수 현황 (탭하면 상태 변경)</div>
+        <div class="type-group-units-label">호수 현황 (탭하면 상태 변경/수정)</div>
         <div class="unit-chips">
           ${tg.units.map(u => {
             const dong = getDong(u.name);
@@ -1061,11 +1030,10 @@ function openDetail(projId) {
     </div>`;
   });
 
-  // 등기부 섹션
   let regHTML = '';
   if (proj.registry) {
     const r = proj.registry;
-    const fields = [['소유자',r.owner],['지번',r.regAddr],['건물면적',r.buildArea],['대지면적',r.landArea],['구조',r.structure],['사용승인일',r.approvalDate],['근저당',r.mortgage],['금액',r.mortgageAmt],['권리사항',r.rights]].filter(([,v])=>v);
+    const fields = [['소유자',r.owner],['지번',r.regAddr],['건물면적',r.buildArea],['대지면적',r.landArea],['구조',r.structure],['사용승인일',r.approvalDate],['근저당',r.mortgage],['금액',r.mortgageAmt],['권리',r.rights]].filter(([,v])=>v);
     regHTML = `
       <div class="detail-section-title" style="margin-top:16px">📋 등기부등본</div>
       <div class="reg-grid">
@@ -1074,7 +1042,6 @@ function openDetail(projId) {
   }
 
   document.getElementById('detailContent').innerHTML = `
-    <!-- 현장 기본 정보 -->
     <div class="detail-info-box">
       <div class="detail-info-row">
         <div class="detail-info-label">현장명</div>
@@ -1092,53 +1059,40 @@ function openDetail(projId) {
         <button class="detail-info-edit" onclick="editField('${proj.id}','memo')">수정</button>
       </div>
     </div>
-
-    <!-- 속지/등기 사진 버튼 -->
     ${(proj.image || proj.registry) ? `
     <div class="detail-photo-btns">
-      ${proj.image ? `<button class="detail-photo-btn" onclick="openPhoto('${proj.id}','속지')">🖼️ 분양 속지 보기</button>` : ''}
-      ${proj.registry ? `<button class="detail-photo-btn" onclick="openPhoto('${proj.id}','등기')">📋 등기부등본 보기</button>` : ''}
+      ${proj.image ? `<button class="detail-photo-btn" onclick="openPhoto('${proj.id}')">🖼️ 분양 속지 보기</button>` : ''}
+      ${proj.registry ? `<button class="detail-photo-btn" onclick="openPhoto('${proj.id}')">📋 등기부등본 보기</button>` : ''}
     </div>` : ''}
-
-    <!-- 타입별 호수 현황 -->
     <div class="detail-section-title">🏠 타입별 호수 현황</div>
     ${typesHTML || '<div style="color:var(--text3);font-size:13px;padding:10px 0">등록된 호수가 없습니다</div>'}
-
     ${regHTML}
-
-    <!-- 등록일 -->
     <div style="font-size:11px;color:var(--text3);margin-top:16px;text-align:right">📅 등록일 ${proj.createdAt}</div>
   `;
 
   document.getElementById('detailOverlay').classList.add('open');
 }
 
-function closeDetail() {
-  document.getElementById('detailOverlay').classList.remove('open');
-  detailProjId = null;
-}
+function closeDetail() { document.getElementById('detailOverlay').classList.remove('open'); detailProjId = null; }
 
 function openMapFromDetail() {
   const proj = projects.find(p=>p.id===detailProjId);
   if (!proj) return;
   const encoded = encodeURIComponent(proj.location || proj.projectName);
-  // T맵 앱이 있으면 T맵, 없으면 카카오맵 웹으로 fallback
   const tmapUrl = `tmap://search?name=${encoded}`;
   const kakaoUrl = `https://map.kakao.com/link/search/${encoded}`;
-  // 모바일에서 T맵 시도 후 실패하면 카카오맵 열기
   window.location.href = tmapUrl;
   setTimeout(() => window.open(kakaoUrl, '_blank'), 1500);
 }
 
 function deleteFromDetail() {
   const proj = projects.find(p=>p.id===detailProjId);
-  if (!confirm(`"${proj?.projectName}" 현장을 삭제할까요?`)) return;
+  if (!confirm(`"${proj?.projectName}" 현장 전체 삭제할까요?`)) return;
   projects = projects.filter(p=>p.id!==detailProjId);
   save(); render(); closeDetail();
   showToast('삭제됨', 'success');
 }
 
-// 현장 필드 인라인 수정
 function editField(projId, field) {
   const proj = projects.find(p=>p.id===projId);
   if (!proj) return;
@@ -1150,7 +1104,7 @@ function editField(projId, field) {
   else if (field==='location') proj.location = val.trim();
   else proj.memo = val.trim();
   save(); render();
-  openDetail(projId); // 상세창 새로고침
+  openDetail(projId);
   showToast(labels[field] + ' 수정됨 ✓', 'success');
 }
 
@@ -1168,18 +1122,17 @@ function openUnitPopup(projId, unitId) {
   if (u.status === '진행') {
     btns.innerHTML = `
       <button class="unit-popup-btn complete" onclick="setUnitStatus('완료')">✅ 분양완료 처리</button>
-      <button class="unit-popup-btn" onclick="editUnitInline()" style="color:var(--accent)">✏️ 정보 수정</button>
+      <button class="unit-popup-btn edit" onclick="editUnitInline()">✏️ 정보 수정 (가격/면적 등)</button>
       <button class="unit-popup-btn cancel" onclick="closeUnitPopup()">취소</button>`;
   } else {
     btns.innerHTML = `
       <button class="unit-popup-btn reopen" onclick="setUnitStatus('진행')">🔄 진행중으로 되돌리기</button>
-      <button class="unit-popup-btn" onclick="editUnitInline()" style="color:var(--accent)">✏️ 정보 수정</button>
+      <button class="unit-popup-btn edit" onclick="editUnitInline()">✏️ 정보 수정</button>
       <button class="unit-popup-btn cancel" onclick="closeUnitPopup()">취소</button>`;
   }
   document.getElementById('unitPopup').classList.add('open');
 }
 
-// 호수 정보 인라인 수정
 function editUnitInline() {
   const proj = projects.find(p=>p.id===pendingUnitProjId);
   const u = proj?.units.find(u=>u.id===pendingUnitId);
@@ -1191,14 +1144,13 @@ function editUnitInline() {
   if (newPrice === null) return;
   const newArea = prompt('면적:', u.area || '');
   if (newArea === null) return;
-  const newMemo = prompt('메모 (선택):', u.memo || '');
+  const newMemo = prompt('메모:', u.memo || '');
   if (newMemo === null) return;
 
   u.name = newName.trim() || u.name;
   u.price = newPrice.trim();
   u.area = newArea.trim();
   u.memo = newMemo.trim();
-
   save(); render();
   closeUnitPopup();
   openDetail(pendingUnitProjId);
@@ -1209,12 +1161,7 @@ function setUnitStatus(status) {
   const proj = projects.find(p=>p.id===pendingUnitProjId);
   const u = proj?.units.find(u=>u.id===pendingUnitId);
   if (!u) return;
-
-  if (status === '완료') {
-    const choice = confirm(`"${u.name}" 분양완료 처리할까요?\n\n확인 = 완료 표시 (목록에 남음)\n취소 = 아무것도 안함`);
-    if (!choice) { closeUnitPopup(); return; }
-  }
-
+  if (status === '완료' && !confirm(`"${u.name}" 분양완료 처리할까요?`)) { closeUnitPopup(); return; }
   u.status = status;
   save(); render();
   closeUnitPopup();
@@ -1227,19 +1174,19 @@ function closeUnitPopup(e) {
   document.getElementById('unitPopup').classList.remove('open');
 }
 
-// ── PHOTO ─────────────────────────────────
+// ── PHOTO (확대 가능) ─────────────────────
 function openPhoto(projId) {
   const proj = projects.find(p=>p.id===projId);
   if (!proj?.image) return;
-  document.getElementById('photoTitle').textContent = proj.projectName + ' 속지';
+  document.getElementById('photoTitle').textContent = proj.projectName;
   document.getElementById('photoImg').src = proj.image;
+  document.getElementById('photoImg').classList.remove('zoomed');
   document.getElementById('photoOverlay').classList.add('open');
 }
 function closePhoto() {
   document.getElementById('photoOverlay').classList.remove('open');
   document.getElementById('photoImg').classList.remove('zoomed');
 }
-
 function toggleZoom(e) {
   e.stopPropagation();
   document.getElementById('photoImg').classList.toggle('zoomed');
@@ -1293,8 +1240,7 @@ function saveManual() {
     status:'진행'
   })).filter(u=>u.name);
 
-  const cat2 = document.getElementById('m_cat').value;
-  const hasReg = cat2!=='분양';
+  const hasReg = cat!=='분양';
   const regData = hasReg ? {
     owner:document.getElementById('m_owner').value,
     regAddr:document.getElementById('m_regAddr').value,
@@ -1308,55 +1254,30 @@ function saveManual() {
   } : null;
   const hasRegData = regData && Object.values(regData).some(v=>v);
 
-  if (editingProjId) {
-    const proj = projects.find(p=>p.id===editingProjId);
-    if (proj) {
-      proj.projectName=name; proj.cat=cat;
-      proj.type=document.getElementById('m_type').value;
-      proj.location=document.getElementById('m_location').value;
-      proj.memo=document.getElementById('m_memo').value;
-      if(hasRegData) proj.registry=regData;
-    }
-    showToast('수정 완료 ✓','success');
-  } else {
-    const proj = {
-      id:Date.now().toString(), cat, projectName:name,
-      type:document.getElementById('m_type').value,
-      location:document.getElementById('m_location').value,
-      memo:document.getElementById('m_memo').value,
-      image:null, registry:hasRegData?regData:null,
-      createdAt:new Date().toLocaleDateString('ko-KR'),
-      units:units.length?units:[{id:'u1',name:'전체',price:'',area:'',loan:'',status:'진행',memo:''}]
-    };
-    projects.unshift(proj);
-    showToast('현장 등록 완료 ✓','success');
-  }
+  const proj = {
+    id:Date.now().toString(), cat, projectName:name,
+    type:document.getElementById('m_type').value,
+    location:document.getElementById('m_location').value,
+    memo:document.getElementById('m_memo').value,
+    image:null, registry:hasRegData?regData:null,
+    createdAt:new Date().toLocaleDateString('ko-KR'),
+    units:units.length?units:[{id:'u1',name:'전체',price:'',area:'',loan:'',status:'진행',memo:''}]
+  };
+  projects.unshift(proj);
+  showToast('현장 등록 완료 ✓','success');
 
   currentCat = cat==='분양'?'분양':'중개';
   if(cat!=='분양'){currentSub=cat;}
   save(); render(); closeManual();
 }
 
-function setStatus(s, el) {
-  currentStatus = s;
-  document.querySelectorAll('.stab').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
-  render();
-}
-
-function save() { localStorage.setItem('매물_v6', JSON.stringify(projects)); }
-
-// ── 내보내기 / 가져오기 ───────────────────
+// ── 내보내기/가져오기 ──────────────────────
 function exportData() {
-  const data = {
-    version: 'v6',
-    exportedAt: new Date().toLocaleString('ko-KR'),
-    projects
-  };
-  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  const data = { version:'v7', exportedAt: new Date().toLocaleString('ko-KR'), projects };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `매물데이터_${new Date().toLocaleDateString('ko-KR').replace(/\./g,'').replace(/ /g,'')}.json`;
+  a.download = `매물데이터_${new Date().toLocaleDateString('ko-KR').replace(/[\. ]/g,'')}.json`;
   a.click();
   URL.revokeObjectURL(a.href);
   showToast('📤 내보내기 완료!', 'success');
@@ -1371,49 +1292,21 @@ function importData(input) {
       const data = JSON.parse(e.target.result);
       const imported = data.projects || data;
       if (!Array.isArray(imported)) throw new Error('형식 오류');
-
-      // 기존 데이터와 병합 (id 중복 제거)
       const existingIds = new Set(projects.map(p => p.id));
       const newProjects = imported.filter(p => !existingIds.has(p.id));
-      const merged = [...newProjects, ...projects];
-
       if (!confirm(`가져올 현장: ${imported.length}개\n새로 추가: ${newProjects.length}개\n기존 유지: ${projects.length}개\n\n가져오시겠어요?`)) return;
-
-      projects = merged;
+      projects = [...newProjects, ...projects];
       save(); render();
       showToast(`📥 ${newProjects.length}개 현장 가져오기 완료!`, 'success');
     } catch (err) {
-      showToast('파일 형식이 올바르지 않아요', 'error');
+      showToast('파일 형식 오류', 'error');
     }
     input.value = '';
   };
   reader.readAsText(file);
 }
 
-// ── API 섹션 토글 ─────────────────────────
-function toggleApiSection() {
-  const body = document.getElementById('apiSectionBody');
-  const icon = document.getElementById('apiToggleIcon');
-  if (body.style.display === 'none') {
-    body.style.display = 'block';
-    icon.style.transform = 'rotate(90deg)';
-  } else {
-    body.style.display = 'none';
-    icon.style.transform = 'rotate(0deg)';
-  }
-}
-
-function downloadAll() {
-  // 현재 HTML 전체를 파일로 다운로드
-  const html = document.documentElement.outerHTML;
-  const blob = new Blob([html], {type: 'text/html;charset=utf-8'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'index.html';
-  a.click();
-  URL.revokeObjectURL(a.href);
-  showToast('index.html 다운로드 완료!', 'success');
-}
+function save() { localStorage.setItem('매물_v7', JSON.stringify(projects)); }
 
 function showToast(msg, type='success') {
   const t = document.getElementById('toast');
@@ -1426,20 +1319,17 @@ function showToast(msg, type='success') {
 function switchTab(tab) {
   const main = document.getElementById('mainView');
   const mapV = document.getElementById('mapView');
-  const navList = document.getElementById('navList');
-  const navMap = document.getElementById('navMap');
-
   if (tab === 'map') {
     main.classList.add('hidden');
     mapV.classList.add('show');
-    navList.classList.remove('active');
-    navMap.classList.add('active');
+    document.getElementById('navList').classList.remove('active');
+    document.getElementById('navMap').classList.add('active');
     initMap();
   } else {
     mapV.classList.remove('show');
     main.classList.remove('hidden');
-    navList.classList.add('active');
-    navMap.classList.remove('active');
+    document.getElementById('navList').classList.add('active');
+    document.getElementById('navMap').classList.remove('active');
   }
 }
 
@@ -1448,20 +1338,14 @@ function initMap() {
   const key = localStorage.getItem('kakaoKey');
   if (!key) {
     document.getElementById('kakaoMap').innerHTML =
-      '<div style="display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;gap:10px;color:#5a5a72;font-size:13px;padding:20px;text-align:center">🗺️ 카카오맵 Key를 입력해야 지도가 표시돼요<br><span style="font-size:11px">설정 상단 카카오맵 Key 입력란에 입력 후 저장하세요</span></div>';
+      '<div style="display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;gap:10px;color:#5a5a72;font-size:13px;padding:20px;text-align:center">🗺️ 카카오맵 Key를 입력해야 지도가 표시돼요<br><span style="font-size:11px">설정(⚙️) → 카카오맵 Key 입력</span></div>';
     return;
   }
-
-  // SDK 이미 로드됐으면 바로 렌더
   if (window.kakao && window.kakao.maps && window.kakao.maps.services) {
-    renderMap();
-    return;
+    renderMap(); return;
   }
-
-  // SDK 로드
   const existing = document.getElementById('kakaoMapSdk');
   if (existing) {
-    // 스크립트는 있는데 아직 로딩중
     const wait = setInterval(() => {
       if (window.kakao && window.kakao.maps && window.kakao.maps.services) {
         clearInterval(wait);
@@ -1470,14 +1354,13 @@ function initMap() {
     }, 200);
     return;
   }
-
   const s = document.createElement('script');
   s.id = 'kakaoMapSdk';
   s.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${key}&libraries=services&autoload=false`;
   s.onload = () => window.kakao.maps.load(renderMap);
   s.onerror = () => {
     document.getElementById('kakaoMap').innerHTML =
-      '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#e85050;font-size:13px;padding:20px;text-align:center">❌ 카카오맵 Key가 올바르지 않거나<br>도메인 등록이 안 되어 있어요</div>';
+      '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#e85050;font-size:13px;padding:20px;text-align:center">❌ 카카오맵 Key 오류 또는 도메인 미등록</div>';
   };
   document.head.appendChild(s);
 }
@@ -1496,78 +1379,59 @@ const catColor = { 분양:'#e8c840', 매매:'#5088e8', 전세:'#40c8a0', 월세:
 function renderMap() {
   const container = document.getElementById('kakaoMap');
   if (!container) return;
-
-  // 파주 중심 기본 좌표
-  const center = new window.kakao.maps.LatLng(37.7601, 126.7801);
-  const options = { center, level: 7 };
-  kakaoMap = new window.kakao.maps.Map(container, options);
-
-  // 기존 마커 제거
+  const center = new window.kakao.maps.LatLng(37.5665, 126.9780); // 서울 기본
+  kakaoMap = new window.kakao.maps.Map(container, { center, level: 8 });
   mapMarkers.forEach(m => m.setMap(null));
   mapMarkers = [];
+
+  const filtered = mapCat === 'all' ? projects : projects.filter(p => p.cat === mapCat);
+  if (!filtered.length) {
+    container.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#5a5a72;font-size:14px">${mapCat==='all'?'등록된':mapCat} 현장이 없습니다</div>`;
+    return;
+  }
 
   const geocoder = new window.kakao.maps.services.Geocoder();
   const bounds = new window.kakao.maps.LatLngBounds();
   let placed = 0;
 
-  // 카테고리 필터 적용
-  const filtered = mapCat === 'all' ? projects : projects.filter(p => p.cat === mapCat);
-
-  if (!filtered.length) {
-    const labels = { all:'전체', 분양:'분양', 매매:'매매', 전세:'전세', 월세:'월세' };
-    container.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#5a5a72;font-size:14px">${labels[mapCat]} 현장이 없습니다</div>`;
-    return;
-  }
-
   filtered.forEach(proj => {
-    if (!proj.location) {
-      console.log('주소 없음:', proj.projectName);
-      return;
-    }
-    console.log('지오코딩 시도:', proj.projectName, proj.location);
+    if (!proj.location) return;
     geocoder.addressSearch(proj.location, (result, status) => {
-      console.log('지오코딩 결과:', proj.projectName, status, result);
       if (status !== window.kakao.maps.services.Status.OK) {
-        console.warn('지오코딩 실패:', proj.projectName, proj.location, status);
+        // 주소 실패시 현장명으로 재시도
+        geocoder.addressSearch(proj.projectName, (r2, s2) => {
+          if (s2 === window.kakao.maps.services.Status.OK) placeMarker(proj, r2[0]);
+        });
         return;
       }
-      const coords = new window.kakao.maps.LatLng(result[0].y, result[0].x);
+      placeMarker(proj, result[0]);
+    });
+
+    function placeMarker(p, res) {
+      const coords = new window.kakao.maps.LatLng(res.y, res.x);
       bounds.extend(coords);
       placed++;
-
-      const color = catColor[proj.cat] || '#e8c840';
-      const remain = proj.units.filter(u=>u.status==='진행').length;
-
-      // 커스텀 마커
+      const color = catColor[p.cat] || '#e8c840';
+      const remain = p.units.filter(u=>u.status==='진행').length;
       const content = `
-        <div onclick="showMapPopup('${proj.id}')" style="
-          background:${color};color:#0f0f13;
-          padding:5px 10px;border-radius:20px;
-          font-size:12px;font-weight:800;
-          box-shadow:0 2px 8px rgba(0,0,0,0.4);
-          white-space:nowrap;cursor:pointer;
-          border:2px solid rgba(255,255,255,0.3);
-          position:relative;
-        ">
-          ${proj.projectName} <span style="opacity:0.7">${remain}건</span>
+        <div onclick="showMapPopup('${p.id}')" style="
+          background:${color};color:#0f0f13;padding:5px 10px;
+          border-radius:20px;font-size:12px;font-weight:800;
+          box-shadow:0 2px 8px rgba(0,0,0,0.4);white-space:nowrap;
+          cursor:pointer;border:2px solid rgba(255,255,255,0.3);position:relative;">
+          ${p.projectName} <span style="opacity:0.7">${remain}건</span>
           <div style="position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);
             width:0;height:0;border-left:6px solid transparent;
             border-right:6px solid transparent;border-top:7px solid ${color}"></div>
         </div>`;
-
       const marker = new window.kakao.maps.CustomOverlay({
         map: kakaoMap, position: coords, content, yAnchor: 1.3
       });
       mapMarkers.push(marker);
-
       if (placed > 1) kakaoMap.setBounds(bounds);
       else kakaoMap.setCenter(coords);
-    });
+    }
   });
-
-  if (projects.length === 0) {
-    container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#5a5a72;font-size:14px">등록된 현장이 없습니다</div>';
-  }
 }
 
 function showMapPopup(projId) {
@@ -1578,28 +1442,21 @@ function showMapPopup(projId) {
   const done = proj.units.filter(u=>u.status==='완료').length;
   document.getElementById('mapPopupName').textContent = proj.projectName + ` (${proj.cat})`;
   document.getElementById('mapPopupAddr').textContent = `📍 ${proj.location||'-'} · 진행 ${remain}건 완료 ${done}건`;
-
-  // T맵 URL — 주소로 바로 길찾기
   const encoded = encodeURIComponent(proj.location || proj.projectName);
   document.getElementById('mapPopupTmap').href = `tmap://search?name=${encoded}`;
-
   document.getElementById('mapPopup').classList.add('show');
 }
-
-function closeMapPopup() {
-  document.getElementById('mapPopup').classList.remove('show');
-  mapPopupProjId = null;
-}
-
+function closeMapPopup() { document.getElementById('mapPopup').classList.remove('show'); mapPopupProjId = null; }
 function mapPopupGoDetail() {
   if (!mapPopupProjId) return;
+  const id = mapPopupProjId;
   closeMapPopup();
   switchTab('list');
-  setTimeout(() => openDetail(mapPopupProjId), 200);
+  setTimeout(() => openDetail(id), 200);
 }
 
+// ── INIT ──────────────────────────────────
 updateApiStatus();
-// 카카오 키 상태 초기화
 const _kk = localStorage.getItem('kakaoKey');
 if (_kk) {
   document.getElementById('kakaoStatus').textContent = '✓ 카카오맵 Key 등록됨';
@@ -1608,13 +1465,10 @@ if (_kk) {
 }
 render();
 
-// ── SERVICE WORKER (PWA 오프라인) ─────────
+// SW
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').then(() => {
-    console.log('SW 등록됨');
-  }).catch(e => console.log('SW 오류 (로컬에서는 정상):', e));
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 </script>
-
 </body>
 </html>
