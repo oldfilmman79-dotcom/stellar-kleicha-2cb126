@@ -660,7 +660,7 @@ async function handleImage(input, mode) {
     document.getElementById('loadingOverlay').classList.add('show');
 
     try {
-      dataUrl = await resizeImage(dataUrl, 1800, 0.85);
+      dataUrl = await resizeImage(dataUrl, 1200, 0.75);
       const base64 = dataUrl.split(',')[1];
       const effectiveCat = getEffectiveCat();
 
