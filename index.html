@@ -677,27 +677,39 @@ async function handleImage(input, mode) {
         showToast('⚡ 등기 등록 완료!', 'success');
       } else {
         const data = await callClaude(base64, apiKey, getPropertyPrompt());
-        const units = (data.units || []).map((u, i) => ({
-          id: 'u' + (i+1), name: u.name || ('호수'+(i+1)),
-          price: u.price || '', area: u.area || '', loan: u.loan || '',
-          status: u.status === '완료' ? '완료' : '진행',
-          memo: u.memo || ''
-        }));
-        const proj = {
-          id: Date.now().toString(), cat: effectiveCat,
-          projectName: data.projectName || '신규 현장', type: data.type || '빌라',
-          location: data.location || '', memo: data.memo || '',
-          image: dataUrl, registry: null, createdAt: new Date().toLocaleDateString('ko-KR'),
-          units: units.length ? units : [{ id:'u1', name:'전체', price:'', area:'', loan:'', status:'진행', memo:'' }]
-        };
-        projects.unshift(proj);
-        const autoSold = units.filter(u => u.status === '완료').length;
-        const msg = autoSold > 0
-          ? `⚡ ${proj.projectName} — ${proj.units.length}호 (${autoSold}개 완료) 등록!`
-          : `⚡ ${proj.projectName} — ${proj.units.length}개 호수 등록!`;
+
+        // 여러 현장 or 단일 현장 처리
+        const projectList = Array.isArray(data) ? data : [data];
+        let lastProjId = null;
+        let totalSold = 0;
+
+        projectList.forEach((d, pi) => {
+          const units = (d.units || []).map((u, i) => ({
+            id: 'u' + pi + '_' + i,
+            name: u.name || ('호수'+(i+1)),
+            price: u.price || '', area: u.area || '', loan: u.loan || '',
+            status: u.status === '완료' ? '완료' : '진행',
+            memo: u.memo || ''
+          }));
+          const proj = {
+            id: (Date.now() + pi).toString(), cat: effectiveCat,
+            projectName: d.projectName || '신규 현장', type: d.type || '빌라',
+            location: d.location || '', memo: d.memo || '',
+            image: dataUrl, registry: null,
+            createdAt: new Date().toLocaleDateString('ko-KR'),
+            units: units.length ? units : [{ id:'u1', name:'전체', price:'', area:'', loan:'', status:'진행', memo:'' }]
+          };
+          projects.unshift(proj);
+          totalSold += units.filter(u => u.status === '완료').length;
+          lastProjId = proj.id;
+        });
+
+        const msg = projectList.length > 1
+          ? `⚡ ${projectList.length}개 현장 등록! (완료 ${totalSold}호 자동처리)`
+          : `⚡ ${projectList[0]?.projectName} — ${projects[0]?.units.length}호 등록!${totalSold > 0 ? ` (${totalSold}개 완료)` : ''}`;
         showToast(msg, 'success');
         save(); render();
-        openDetail(proj.id);
+        if (lastProjId) openDetail(lastProjId);
         document.getElementById('loadingOverlay').classList.remove('show');
         input.value = '';
         return;
@@ -739,7 +751,7 @@ async function handlePdf(input) {
           'anthropic-dangerous-direct-browser-access': 'true'
         },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
+          model: 'claude-sonnet-4-6',
           max_tokens: 2000,
           messages: [{ role:'user', content: [
             { type:'document', source:{ type:'base64', media_type:'application/pdf', data:base64 } },
@@ -776,44 +788,57 @@ async function handlePdf(input) {
 }
 
 function getPropertyPrompt() {
-  return `이 이미지는 부동산 매물 속지입니다.
+  return `이 이미지는 부동산 매물 속지입니다. 아래 규칙을 반드시 따르세요.
 
-[현장명 추출 - 매우 중요]
-- 이미지에서 가장 크고 눈에 띄는 브랜드명/단지명 원문 그대로
-- 워터마크, 전화번호, 주소는 현장명이 아님
-- 예: "포레스트 휴", "힐스테이트 파주"
+[현장 개수 판단 - 매우 중요]
+- 이미지에 현장이 1개인 경우 → JSON 객체 1개로 응답
+- 이미지에 현장이 2개 이상인 경우 → JSON 배열로 응답 (각 현장 객체 포함)
+- 현장 구분 기준: 별도의 단지명/브랜드명, 별도의 주소, 별도의 표가 있는 경우
 
-[주소 추출 - 매우 중요]
-- 시/군/구/읍/면/로/길 포함 최대한 상세하게
-- 광역시(인천, 서울, 부산 등)도 정확히 인식
-- 작은 폰트/흐릿한 글씨도 최대한 정확히 읽기
+[현장명 추출]
+- 가장 크고 눈에 띄는 단지명/브랜드명 원문 그대로
+- 예: "포레스트 휴", "DAVVERO", "해들목휴먼빌", "[갈현]"의 경우 "갈현"
+- 브랜드명(DAVVERO)과 단지명([갈현])이 같이 있으면 단지명 우선
+- 워터마크, 전화번호, 주소는 현장명 아님
 
-[호수별 정보]
-- 모든 호수 누락 없이 추출
-- 작은 글씨도 정확히
+[주소 추출]
+- 시/군/구/읍/면/로/길/번지 포함 최대한 상세하게
+- 광역시(서울특별시, 인천광역시 등) 정확히 인식
+- 예: "은평구 갈현동 518-3번지" → "서울특별시 은평구 갈현동 518-3"
 
 [분양완료 호수 판별 - 매우 중요]
-- X표, ✗, 빨간 줄, 볼펜 그어짐, 사선, 색칠(검정/빨강), "완료", "계약", "SOLD" 표시가 있는 호수
-  → "status": "완료"
-- 명확하지 않으면 "진행"
+아래 중 하나라도 해당하면 status = "완료":
+- 호수 행에 "분양완료", "완료", "계약", "SOLD" 텍스트가 있음
+- 호수 행이 분홍/빨강 배경 하이라이트로 표시됨
+- 분양가에 가로줄(삭선)이 그어져 있음
+- 볼펜으로 X표, 사선, 줄이 그어져 있음
+- 행 전체가 비어있고 "분양완료" 텍스트만 있음
+위 표시가 없으면 status = "진행"
 
-순수 JSON만 응답:
+[호수 추출]
+- 표에 있는 모든 호수 빠짐없이 추출
+- 구겨진 종이, 흐린 글씨도 최대한 정확히
+- 동 번호가 없으면 호수만 (예: "101호")
+
+단일 현장이면 아래 형식으로:
 {
   "projectName": "단지명",
   "type": "빌라/아파트/오피스텔/단독주택",
   "location": "상세 주소",
   "memo": "연락처, 담당자",
   "units": [
-    {
-      "name": "동+호수 (예: 601동 101호)",
-      "price": "가격",
-      "area": "전용면적",
-      "loan": "대출액 (있으면)",
-      "memo": "특이사항",
-      "status": "진행 or 완료"
-    }
+    { "name": "호수명", "price": "가격(만원)", "area": "전용면적", "loan": "대출액", "memo": "특이사항", "status": "진행 or 완료" }
   ]
-}`;
+}
+
+여러 현장이면 위 객체를 배열로:
+[
+  { "projectName": "갈현", ... },
+  { "projectName": "새절", ... },
+  { "projectName": "불광천2", ... }
+]
+
+순수 JSON만 응답. 마크다운 없이.`;
 }
 
 function getRegistryPrompt() {
@@ -837,7 +862,7 @@ async function callClaude(base64, apiKey, prompt) {
       'anthropic-dangerous-direct-browser-access':'true'
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514', max_tokens: 2000,
+      model: 'claude-sonnet-4-6', max_tokens: 4000,
       messages: [{ role:'user', content: [
         { type:'image', source:{ type:'base64', media_type:'image/jpeg', data:base64 } },
         { type:'text', text: prompt }
@@ -847,9 +872,16 @@ async function callClaude(base64, apiKey, prompt) {
   if (!res.ok) { const e = await res.text(); throw new Error('API ' + res.status + ': ' + e.slice(0,60)); }
   const data = await res.json();
   const text = data.content.map(b=>b.text||'').join('');
-  const arr = text.match(/\[[\s\S]*\]/);
-  const obj = text.match(/\{[\s\S]*\}/);
-  return JSON.parse(arr && arr[0].length > (obj?obj[0].length:0) ? arr[0] : (obj?obj[0]:text));
+  // 배열 먼저 시도, 실패하면 객체
+  const arrMatch = text.match(/\[[\s\S]*\]/);
+  const objMatch = text.match(/\{[\s\S]*\}/);
+  if (arrMatch) {
+    try { return JSON.parse(arrMatch[0]); } catch(e) {}
+  }
+  if (objMatch) {
+    try { return JSON.parse(objMatch[0]); } catch(e) {}
+  }
+  throw new Error('JSON 파싱 실패');
 }
 
 // ── 전화번호 ─────────────────────────────
