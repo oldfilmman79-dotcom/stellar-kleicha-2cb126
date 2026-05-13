@@ -1522,9 +1522,11 @@ if (_kk) {
 }
 render();
 
-// SW
+// SW 제거 (캐시 문제 방지)
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(()=>{});
+  navigator.serviceWorker.getRegistrations().then(regs => {
+    regs.forEach(reg => reg.unregister());
+  });
 }
 </script>
 </body>
