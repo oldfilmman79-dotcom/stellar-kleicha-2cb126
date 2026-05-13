@@ -788,57 +788,40 @@ async function handlePdf(input) {
 }
 
 function getPropertyPrompt() {
-  return `이 이미지는 부동산 매물 속지입니다. 아래 규칙을 반드시 따르세요.
+  return `이 이미지는 부동산 매물 속지입니다.
 
-[현장 개수 판단 - 매우 중요]
-- 이미지에 현장이 1개인 경우 → JSON 객체 1개로 응답
-- 이미지에 현장이 2개 이상인 경우 → JSON 배열로 응답 (각 현장 객체 포함)
-- 현장 구분 기준: 별도의 단지명/브랜드명, 별도의 주소, 별도의 표가 있는 경우
-
-[현장명 추출]
-- 가장 크고 눈에 띄는 단지명/브랜드명 원문 그대로
-- 예: "포레스트 휴", "DAVVERO", "해들목휴먼빌", "[갈현]"의 경우 "갈현"
-- 브랜드명(DAVVERO)과 단지명([갈현])이 같이 있으면 단지명 우선
+[현장명 추출 - 최우선]
+- 이미지 상단에 가장 크게 표시된 단지명/브랜드명
+- 글자 사이 공백 있어도 붙여서 반환 (예: "라 피 네" → "라피네")
+- 브랜드명과 단지명이 같이 있으면 단지명 우선
 - 워터마크, 전화번호, 주소는 현장명 아님
 
 [주소 추출]
-- 시/군/구/읍/면/로/길/번지 포함 최대한 상세하게
-- 광역시(서울특별시, 인천광역시 등) 정확히 인식
-- 예: "은평구 갈현동 518-3번지" → "서울특별시 은평구 갈현동 518-3"
+- 시/군/구/읍/면/로/길/번지 최대한 상세하게
+- 전체 주소 없으면 번지수만이라도 (예: "내유동 278-18")
+- 주소가 전혀 없으면 빈 문자열
 
-[분양완료 호수 판별 - 매우 중요]
+[현장 개수 판단]
+- 현장 1개 → JSON 객체 1개
+- 현장 2개 이상 → JSON 배열
+
+[분양완료 판별 - 매우 중요]
 아래 중 하나라도 해당하면 status = "완료":
-- 호수 행에 "분양완료", "완료", "계약", "SOLD" 텍스트가 있음
-- 호수 행이 분홍/빨강 배경 하이라이트로 표시됨
-- 분양가에 가로줄(삭선)이 그어져 있음
-- 볼펜으로 X표, 사선, 줄이 그어져 있음
-- 행 전체가 비어있고 "분양완료" 텍스트만 있음
-위 표시가 없으면 status = "진행"
+- 행에 "분양완료" 텍스트
+- 오렌지/노란/분홍/빨강 배경 행
+- 가격에 삭선(줄)
+- 볼펜 X표/사선
+- 빈 행 (면적/가격 없이 분양완료만)
+위 없으면 status = "진행"
 
 [호수 추출]
-- 표에 있는 모든 호수 빠짐없이 추출
-- 구겨진 종이, 흐린 글씨도 최대한 정확히
-- 동 번호가 없으면 호수만 (예: "101호")
+- 동 컬럼과 호수 컬럼 조합 (예: "1동 201호")
+- 동 표시 없으면 호수만 (예: "201호")
+- 모든 호수 빠짐없이
 
-단일 현장이면 아래 형식으로:
-{
-  "projectName": "단지명",
-  "type": "빌라/아파트/오피스텔/단독주택",
-  "location": "상세 주소",
-  "memo": "연락처, 담당자",
-  "units": [
-    { "name": "호수명", "price": "가격(만원)", "area": "전용면적", "loan": "대출액", "memo": "특이사항", "status": "진행 or 완료" }
-  ]
-}
-
-여러 현장이면 위 객체를 배열로:
-[
-  { "projectName": "갈현", ... },
-  { "projectName": "새절", ... },
-  { "projectName": "불광천2", ... }
-]
-
-순수 JSON만 응답. 마크다운 없이.`;
+반드시 순수 JSON만 응답. 마크다운 코드블록 없이. 설명 없이.
+단일 현장:
+{"projectName":"단지명","type":"빌라","location":"주소","memo":"연락처","units":[{"name":"호수","price":"가격","area":"면적","loan":"대출","memo":"특이사항","status":"진행 or 완료"}]}`;
 }
 
 function getRegistryPrompt() {
@@ -869,19 +852,24 @@ async function callClaude(base64, apiKey, prompt) {
       ]}]
     })
   });
-  if (!res.ok) { const e = await res.text(); throw new Error('API ' + res.status + ': ' + e.slice(0,60)); }
+  if (!res.ok) { const e = await res.text(); throw new Error('API ' + res.status + ': ' + e.slice(0,120)); }
   const data = await res.json();
-  const text = data.content.map(b=>b.text||'').join('');
-  // 배열 먼저 시도, 실패하면 객체
+  let text = data.content.map(b=>b.text||'').join('');
+
+  // 마크다운 코드블록 제거
+  text = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+
+  // 배열 먼저 시도
   const arrMatch = text.match(/\[[\s\S]*\]/);
-  const objMatch = text.match(/\{[\s\S]*\}/);
   if (arrMatch) {
     try { return JSON.parse(arrMatch[0]); } catch(e) {}
   }
+  // 객체 시도
+  const objMatch = text.match(/\{[\s\S]*\}/);
   if (objMatch) {
     try { return JSON.parse(objMatch[0]); } catch(e) {}
   }
-  throw new Error('JSON 파싱 실패');
+  throw new Error('JSON 파싱 실패: ' + text.slice(0,100));
 }
 
 // ── 전화번호 ─────────────────────────────
