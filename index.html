@@ -683,7 +683,7 @@ async function handleImage(input, mode) {
     document.getElementById('loadingOverlay').classList.add('show');
 
     try {
-      dataUrl = await resizeImage(dataUrl, 1200, 0.75);
+      dataUrl = await resizeImage(dataUrl, 1800, 0.9);
       const base64 = dataUrl.split(',')[1];
       const effectiveCat = getEffectiveCat();
 
@@ -880,6 +880,7 @@ async function callClaude(base64, apiKey, prompt) {
   if (!res.ok) { const e = await res.text(); throw new Error('API ' + res.status + ': ' + e.slice(0,120)); }
   const data = await res.json();
   let text = data.content.map(b=>b.text||'').join('');
+  console.log('AI 응답 원문:', text.slice(0, 500));
 
   // 마크다운 코드블록 제거
   text = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
