@@ -478,13 +478,9 @@
 
 <script>
 let projects = JSON.parse(localStorage.getItem('매물_v7') || localStorage.getItem('매물_v6') || '[]');
-// 기존 고용량 사진 즉시 제거 (localStorage 용량 확보)
-let _needSave = false;
-projects = projects.map(p => {
-  if (p.image && p.image.length > 50000) { _needSave = true; return { ...p, image: null }; }
-  return p;
-});
-if (_needSave) localStorage.setItem('매물_v7', JSON.stringify(projects));
+// 모든 사진 데이터 즉시 제거 (localStorage 용량 확보)
+projects = projects.map(p => ({ ...p, image: null }));
+localStorage.setItem('매물_v7', JSON.stringify(projects));
 let currentCat = '분양';
 let currentSub = '매매';
 let currentStatus = 'all';
@@ -746,8 +742,7 @@ async function handleImage(input, mode) {
       save(); render();
     } catch (err) {
       console.error(err);
-      alert('인식 오류:\n' + (err.message || '알 수 없는 오류'));
-      showToast('인식 실패', 'error');
+      showToast('인식 실패: ' + (err.message || '다시 시도').slice(0, 40), 'error');
     } finally {
       document.getElementById('loadingOverlay').classList.remove('show');
       input.value = '';
@@ -1356,7 +1351,16 @@ function importData(input) {
   reader.readAsText(file);
 }
 
-function save() { localStorage.setItem('매물_v7', JSON.stringify(projects)); }
+function save() {
+  try {
+    localStorage.setItem('매물_v7', JSON.stringify(projects));
+  } catch(e) {
+    // 용량 초과 시 이미지 제거 후 재시도
+    const noImg = projects.map(p => ({...p, image: null}));
+    try { localStorage.setItem('매물_v7', JSON.stringify(noImg)); } catch(e2) {}
+    showToast('⚠️ 저장공간 부족 — 사진 제외 저장됨', 'error');
+  }
+}
 
 function showToast(msg, type='success') {
   const t = document.getElementById('toast');
