@@ -478,17 +478,13 @@
 
 <script>
 let projects = JSON.parse(localStorage.getItem('매물_v7') || localStorage.getItem('매물_v6') || '[]');
-// 기존 고용량 사진 데이터 압축 처리
-(async () => {
-  let changed = false;
-  for (const p of projects) {
-    if (p.image && p.image.length > 100000) {
-      p.image = await compressImage(p.image, 600, 0.5);
-      changed = true;
-    }
-  }
-  if (changed) save();
-})();
+// 기존 고용량 사진 즉시 제거 (localStorage 용량 확보)
+let _needSave = false;
+projects = projects.map(p => {
+  if (p.image && p.image.length > 50000) { _needSave = true; return { ...p, image: null }; }
+  return p;
+});
+if (_needSave) localStorage.setItem('매물_v7', JSON.stringify(projects));
 let currentCat = '분양';
 let currentSub = '매매';
 let currentStatus = 'all';
