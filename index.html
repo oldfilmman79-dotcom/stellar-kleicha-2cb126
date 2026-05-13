@@ -478,6 +478,17 @@
 
 <script>
 let projects = JSON.parse(localStorage.getItem('매물_v7') || localStorage.getItem('매물_v6') || '[]');
+// 기존 고용량 사진 데이터 압축 처리
+(async () => {
+  let changed = false;
+  for (const p of projects) {
+    if (p.image && p.image.length > 100000) {
+      p.image = await compressImage(p.image, 600, 0.5);
+      changed = true;
+    }
+  }
+  if (changed) save();
+})();
 let currentCat = '분양';
 let currentSub = '매매';
 let currentStatus = 'all';
@@ -625,6 +636,26 @@ function jumpToProject(projId, cat) {
   setTimeout(() => openDetail(projId), 150);
 }
 
+// ── IMAGE COMPRESS (썸네일용) ─────────────
+function compressImage(dataUrl, maxSize, quality) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      let w = img.width, h = img.height;
+      if (w > maxSize || h > maxSize) {
+        if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
+        else { w = Math.round(w * maxSize / h); h = maxSize; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = () => resolve(null);
+    img.src = dataUrl;
+  });
+}
+
 // ── IMAGE RESIZE ──────────────────────────
 function resizeImage(dataUrl, maxSize, quality) {
   return new Promise((resolve) => {
@@ -666,17 +697,19 @@ async function handleImage(input, mode) {
 
       if (mode === '등기') {
         const data = await callClaude(base64, apiKey, getRegistryPrompt());
+        const thumb = await compressImage(dataUrl, 600, 0.5);
         const proj = {
           id: Date.now().toString(), cat: effectiveCat,
           projectName: data.name || '등기 매물', type: data.type || '빌라',
           location: data.location || '', memo: data.memo || '',
-          image: dataUrl, registry: data, createdAt: new Date().toLocaleDateString('ko-KR'),
+          image: thumb, registry: data, createdAt: new Date().toLocaleDateString('ko-KR'),
           units: [{ id:'u1', name:'전체', price:'', area: data.area||'', loan:'', status:'진행', memo:'' }]
         };
         projects.unshift(proj);
         showToast('⚡ 등기 등록 완료!', 'success');
       } else {
         const data = await callClaude(base64, apiKey, getPropertyPrompt());
+        const thumb = await compressImage(dataUrl, 600, 0.5);
 
         // 여러 현장 or 단일 현장 처리
         const projectList = Array.isArray(data) ? data : [data];
@@ -695,7 +728,7 @@ async function handleImage(input, mode) {
             id: (Date.now() + pi).toString(), cat: effectiveCat,
             projectName: d.projectName || '신규 현장', type: d.type || '빌라',
             location: d.location || '', memo: d.memo || '',
-            image: dataUrl, registry: null,
+            image: pi === 0 ? thumb : null, registry: null,
             createdAt: new Date().toLocaleDateString('ko-KR'),
             units: units.length ? units : [{ id:'u1', name:'전체', price:'', area:'', loan:'', status:'진행', memo:'' }]
           };
